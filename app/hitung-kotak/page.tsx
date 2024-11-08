@@ -3,6 +3,8 @@ import React from 'react'
 import { useState } from 'react';
 import { ChangeEvent } from 'react';
 import { FormEvent } from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faWhatsapp } from '@fortawesome/free-brands-svg-icons';
 
 type Material = 'plastik' | 'kardus' | '';
 const Perhitungan = () => {
@@ -158,7 +160,8 @@ const Perhitungan = () => {
                                 <p>Jumlah kotak = <strong>{quantity || 'Tidak ditentukan'}</strong></p>
                                 <p>Total Harga = <strong>{totalPrice}</strong> IDR</p>
                                 <a href="https://wa.me/+628978332719" target="_blank" rel="noopener noreferrer" className="btn btn-success">
-                                <i className="fab fa-whatsapp mr-2"></i>
+                                <FontAwesomeIcon icon={faWhatsapp} className="mr-2" />
+
                                 Lanjut ke WhatsApp
                                 </a>
                             </div>

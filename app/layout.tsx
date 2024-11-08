@@ -17,6 +17,18 @@ const geistMono = localFont({
 export const metadata: Metadata = {
   title: "PT. Sugi Harti Indonesia",
   description: "Perusahaan Produksi Packaging, Fabrikasi & General Supplier.",
+  icons : {
+    icon : [
+      '/favicon.ico?v=4',
+    ],
+    apple : [
+      '/apple-touch-icon.png?v=4',
+    ],
+    shortcut : [
+      '/apple-touch-icon.png'
+    ]
+  },
+  manifest : '/site.webmanifest'
 };
 
 export default function RootLayout({
@@ -26,9 +38,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet" />
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+
       >
         {children}
       </body>
