@@ -28,7 +28,7 @@ const handleSubmit = (event: React.FormEvent) => {
         // Hitungan Body
         const body = {
         panjang: Number(tinggi) + Number(lebar) + Number(tinggi) + Number(sparePond), // panjang body
-        lebar: Number(tinggi) + Number(tinggi) + Number(lebar) + Number(sparePond), // lebar body
+        lebar: Number(tinggi) + Number(tinggi) + Number(lebar) + Number(sparePond), // lebar body 
         };
 
         // Hitungan Pintu
