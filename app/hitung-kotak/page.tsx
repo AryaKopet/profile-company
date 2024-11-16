@@ -1,174 +1,180 @@
-"use client" 
-import React from 'react' 
-import { useState } from 'react'
-import { ChangeEvent } from 'react'
-import { FormEvent } from 'react'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome' 
-import { faWhatsapp } from '@fortawesome/free-brands-svg-icons'
+'use client'
+import React, { useState } from 'react';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
-type Material = 'plastik' | 'kardus' | ''
+const MaterialCalculator = () => {
+const [tinggi, setTinggi] = useState<number | ''>('');
+const [lebar, setLebar] = useState<number | ''>('');
+const [sparePond, setSparePond] = useState<number | ''>('');
+const [kupingan, setKupingan] = useState<number | ''>('');
+const [resultBody, setResultBody] = useState<string>('');
+const [resultPintu, setResultPintu] = useState<string>('');
+const [resultTotal, setResultTotal] = useState<string>('');
 
-const Perhitungan = () => { 
-    const [material, setMaterial] = useState<Material>('') 
-    const [length, setLength] = useState<string>('') 
-    const [width, setWidth] = useState<string>('') 
-    const [height, setHeight] = useState<string>('') 
-    const [volume, setVolume] = useState<number | null>(null) 
-    const [price, setPrice] = useState<number | null>(null) 
-    const [quantity, setQuantity] = useState<string | null>(null) 
-    const [totalPrice, setTotalPrice] = useState<number | null>(null)
+const handleSubmit = (event: React.FormEvent) => {
+        event.preventDefault();
 
-    // State untuk menyimpan data yang akan dikirim via WhatsApp
-    const [whatsappMessage, setWhatsappMessage] = useState<string>('')
+        // Data awal
+        const hargaMaterial = {
+        tebal3mm: 115000,
+        tebal5mm: 210000,
+        };
 
-    const calculate = (e: FormEvent) => { 
-        e.preventDefault()
+        const ukuranMaterial = {
+        panjang: 3000,
+        lebar: 2000,
+        };
 
-        const parsedLength = parseFloat(length) 
-        const parsedWidth = parseFloat(width) 
-        const parsedHeight = parseFloat(height) 
-        const parsedQuantity = quantity ? parseFloat(quantity) : null
+        // Hitungan Body
+        const body = {
+        panjang: Number(tinggi) + Number(lebar) + Number(tinggi) + Number(sparePond), // panjang body
+        lebar: Number(tinggi) + Number(tinggi) + Number(lebar) + Number(sparePond), // lebar body
+        };
 
-        if (parsedLength && parsedWidth && parsedHeight) { 
-            const calculatedVolume = 2 * (parsedLength * parsedWidth + parsedLength * parsedHeight + parsedWidth * parsedHeight) 
-            setVolume(calculatedVolume)
+        // Hitungan Pintu
+        const pintu = {
+        panjang: Number(tinggi) + Number(kupingan) + Number(sparePond), // panjang pintu
+        lebar: Number(kupingan) + Number(lebar) + Number(kupingan) + Number(sparePond), // lebar pintu
+        };
 
-            let calculatedPrice = 0 
-            if (material === 'kardus') { 
-                calculatedPrice = calculatedVolume 
-            } else if (material === 'plastik') { 
-                calculatedPrice = calculatedVolume * 2 
-            }
+        // Menghitung jumlah potongan per bagian (Body dan Pintu)
+        const hitungPotongan = (
+        ukuranLembar: { panjang: number; lebar: number },
+        ukuranBagian: { panjang: number; lebar: number },
+        hanyaPanjang = false
+        ) => {
+        const potonganPanjang = Math.floor(ukuranLembar.panjang / ukuranBagian.panjang);
+        if (hanyaPanjang) {
+            return potonganPanjang;
+        }
+        const potonganLebar = Math.floor(ukuranLembar.lebar / ukuranBagian.lebar);
+        return potonganPanjang * potonganLebar;
+        };
 
-            setPrice(calculatedPrice)
+        const jumlahBody = hitungPotongan(ukuranMaterial, body);
+        const jumlahPintu = hitungPotongan(ukuranMaterial, pintu);
 
-            // Calculate total price
-            let newTotalPrice = calculatedPrice
-            if (parsedQuantity) { 
-                newTotalPrice = calculatedPrice * parsedQuantity 
-            } 
-            setTotalPrice(newTotalPrice)
+        // Perhitungan harga material untuk masing-masing bagian
+        const hitungHargaMaterial = (harga: number, jumlah: number) => {
+        return harga / jumlah;
+        };
 
-            // Menyusun pesan untuk WhatsApp dengan total harga yang benar
-            const message = `Selamat pagi, saya ingin memesan kotak dengan detail berikut:\n\nMaterial: ${material}\nPanjang: ${length} cm\nLebar: ${width} cm\nTinggi: ${height} cm\nLuas kotak: ${calculatedVolume} cm³\nHarga satuan: ${calculatedPrice} IDR\nJumlah kotak: ${quantity || 'Tidak ditentukan'}\nTotal Harga: ${newTotalPrice} IDR` 
-            setWhatsappMessage(message) 
-            
-        } 
-    }
+        // Asumsi kita menggunakan material tebal 5 mm
+        const hargaPerLembar = hargaMaterial.tebal5mm;
 
-    const resetForm = () => { 
-        setMaterial('') 
-        setLength('') 
-        setWidth('') 
-        setHeight('') 
-        setVolume(null) 
-        setPrice(null) 
-        setQuantity(null) 
-        setTotalPrice(null) 
-        setWhatsappMessage('') 
-    }
+        // Harga material per bagian
+        const hargaMaterialBody = hitungHargaMaterial(hargaPerLembar, jumlahBody);
+        const hargaMaterialPintu = hitungHargaMaterial(hargaPerLembar, jumlahPintu);
+        const totalHargaMaterial = hargaMaterialBody + hargaMaterialPintu;
 
-    const handleWhatsappClick = () => { 
-        if (whatsappMessage) { 
-            const whatsappURL = `https://wa.me/+628978332719?text=${encodeURIComponent(whatsappMessage)}` 
-            window.open(whatsappURL, '_blank') 
-        } 
-    }
+        // Format output data inputan
+        const bodyResult = `Total potongan untuk Body: ${jumlahBody} pcs\nHarga material per Box (Body): Rp ${hargaMaterialBody.toFixed(2)}`;
+        const pintuResult = `Total potongan untuk Pintu: ${jumlahPintu} pcs\nHarga material per Box (Pintu): Rp ${hargaMaterialPintu.toFixed(2)}`;
+        const totalResult = `Total harga material per Box (Body + Pintu): Rp ${totalHargaMaterial.toFixed(2)}`;
 
-    return ( 
-        <> 
-        <div className="container mt-5"> 
-            <h2 className="text-center mb-4">Perhitungan Material dan Ukuran Kotak</h2> 
-            <div className="card p-4 shadow-sm"> 
-                <form onSubmit={calculate}> 
-                    <div className="mb-3"> 
-                        <label htmlFor="material" className="form-label">Material:</label> 
-                        <select 
-                            value={material} 
-                            onChange={(e: ChangeEvent<HTMLSelectElement>) => setMaterial(e.target.value as Material)} 
-                            id="material" 
-                            className="form-select" 
-                            required 
-                        > 
-                            <option value="" disabled>Pilih Material</option> 
-                            <option value="plastik">Plastik</option> 
-                            <option value="kardus">Kardus</option> 
-                        </select> 
-                    </div> 
-                    <div className="mb-3"> 
-                        <label htmlFor="length" className="form-label">Panjang (cm):</label> 
-                        <input 
-                            type="number" 
-                            value={length} 
-                            onChange={(e: ChangeEvent<HTMLInputElement>) => setLength(e.target.value)} 
-                            id="length" 
-                            className="form-control" 
-                            placeholder="0" 
-                            required 
-                        /> 
-                    </div> 
-                    <div className="mb-3"> 
-                        <label htmlFor="width" className="form-label">Lebar (cm):</label> 
-                        <input 
-                            type="number" 
-                            value={width} 
-                            onChange={(e: ChangeEvent<HTMLInputElement>) => setWidth(e.target.value)} 
-                            id="width" 
-                            className="form-control" 
-                            placeholder="0" 
-                            required 
-                        /> 
-                    </div> 
-                    <div className="mb-3"> 
-                        <label htmlFor="height" className="form-label">Tinggi (cm):</label> 
-                        <input 
-                            type="number" 
-                            value={height} 
-                            onChange={(e: ChangeEvent<HTMLInputElement>) => setHeight(e.target.value)} 
-                            id="height" 
-                            className="form-control" 
-                            placeholder="0" 
-                            required 
-                        /> 
-                    </div> 
-                    <div className="mb-3"> 
-                        <label htmlFor="quantity" className="form-label">Jumlah Kotak yang Dibeli (Opsional):</label> 
-                        <input 
-                            type="number" 
-                            value={quantity || ''} 
-                            onChange={(e: ChangeEvent<HTMLInputElement>) => setQuantity(e.target.value)} 
-                            id="quantity" 
-                            className="form-control" 
-                            placeholder="Masukkan jumlah kotak" 
-                        /> 
-                    </div> 
-                    <div className="d-flex gap-2"> 
-                        <button type="submit" className="btn btn-primary px-3 py-2">Hitung</button> 
-                        <button type="button" onClick={resetForm} className="btn btn-danger px-4 py-2">Reset</button> 
-                    </div> 
-                </form> 
-                {volume !== null && ( 
-                    <div className="alert alert-info mt-4" role="alert"> 
-                        <h4 className="alert-heading">Hasil Perhitungan</h4> 
-                        <p>Material = {material}</p> 
-                        <p>Panjang = {length} cm</p> 
-                        <p>Lebar = {width} cm</p> 
-                        <p>Tinggi = {height} cm</p> 
-                        <hr /> 
-                        <p>Luas kotak = <strong>{volume}</strong> cm³</p> 
-                        <p>Harga satuan = <strong>{price}</strong> IDR</p> 
-                        <p>Jumlah kotak = <strong>{quantity || 'Tidak ditentukan'}</strong> pcs</p> 
-                        <p>Total Harga = <strong>{totalPrice ? totalPrice : 'Tidak ditentukan'}</strong> IDR</p> 
-                        <button onClick={handleWhatsappClick} className="btn btn-success"> 
-                            <FontAwesomeIcon icon={faWhatsapp} className="mr-2" /> 
-                            Lanjut ke WhatsApp 
-                        </button> 
-                    </div> 
-                )} 
-            </div> 
-        </div> <br/>
-        </> 
-    ) 
-}
+        // Update state dengan hasil perhitungan
+        setResultBody(bodyResult.replace(/\n/g, '<br>'));
+        setResultPintu(pintuResult.replace(/\n/g, '<br>'));
+        setResultTotal(totalResult.replace(/\n/g, '<br>'));
+    };
 
-export default Perhitungan
+    const handleReset = () => {
+        // Reset semua input dan hasil
+        setTinggi('');
+        setLebar('');
+        setSparePond('');
+        setKupingan('');
+        setResultBody('');
+        setResultPintu('');
+        setResultTotal('');
+    };
+
+    return (
+        <div className="container">
+        <div className="card mt-5">
+            <div className="card-header bg-primary text-white">
+            <h4 className="card-title text-center">Perhitungan Harga Material Box</h4>
+            </div>
+            <div className="card-body">
+            <form onSubmit={handleSubmit}>
+                <div className="form-group">
+                <label htmlFor="tinggi">Tinggi (mm)</label>
+                <input
+                    type="number"
+                    className="form-control mb-3"
+                    id="tinggi"
+                    placeholder="Masukkan Tinggi (mm)"
+                    value={tinggi}
+                    onChange={(e) => setTinggi(e.target.value ? parseInt(e.target.value) : '')}
+                    required
+                />
+                </div>
+                <div className="form-group">
+                <label htmlFor="lebar">Lebar (mm)</label>
+                <input
+                    type="number"
+                    className="form-control mb-3"
+                    id="lebar"
+                    placeholder="Masukkan Lebar (mm)"
+                    value={lebar}
+                    onChange={(e) => setLebar(e.target.value ? parseInt(e.target.value) : '')}
+                    required
+                />
+                </div>
+                <div className="form-group">
+                <label htmlFor="sparePond">Spare Pond (mm)</label>
+                <input
+                    type="number"
+                    className="form-control mb-3"
+                    id="sparePond"
+                    placeholder="Masukkan Spare Pond (mm)"
+                    value={sparePond}
+                    onChange={(e) => setSparePond(e.target.value ? parseInt(e.target.value) : '')}
+                    required
+                />
+                </div>
+                <div className="form-group">
+                <label htmlFor="kupingan">Kupingan (mm)</label>
+                <input
+                    type="number"
+                    className="form-control mb-3"
+                    id="kupingan"
+                    placeholder="Masukkan Kupingan (mm)"
+                    value={kupingan}
+                    onChange={(e) => setKupingan(e.target.value ? parseInt(e.target.value) : '')}
+                    required
+                />
+                </div>
+                <button type="submit" className="btn btn-primary mr-2">
+                Hitung
+                </button>
+                <button type="button" className="btn btn-danger" onClick={handleReset}>
+                Reset
+                </button>
+            </form>
+
+            <div className="result-box mt-4">
+                <h5>Hasil Perhitungan:</h5>
+                <div
+                id="resultBody"
+                className="mt-3"
+                dangerouslySetInnerHTML={{ __html: resultBody }}
+                ></div>
+                <div
+                id="resultPintu"
+                className="mt-3"
+                dangerouslySetInnerHTML={{ __html: resultPintu }}
+                ></div>
+                <div
+                id="resultTotal"
+                className="mt-3"
+                dangerouslySetInnerHTML={{ __html: resultTotal }}
+                ></div>
+            </div>
+            </div>
+        </div>
+        </div>
+    );
+    };
+
+    export default MaterialCalculator;
